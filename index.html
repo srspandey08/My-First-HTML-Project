@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome | Login & Register</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    min-height:100vh;display:grid;place-items:center;padding:20px;
+    font-family:'Poppins',system-ui,sans-serif;
+    background:linear-gradient(-45deg,#1e1b4b,#4c1d95,#1d4ed8,#be185d);
+    background-size:400% 400%;animation:bgMove 14s ease infinite;overflow-x:hidden;
+  }
+  @keyframes bgMove{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
+
+  /* floating bubbles */
+  .bubble{position:fixed;border-radius:50%;background:rgba(255,255,255,.08);animation:float 12s ease-in-out infinite;pointer-events:none}
+  .b1{width:220px;height:220px;top:-60px;left:-60px}
+  .b2{width:160px;height:160px;bottom:40px;right:8%;animation-delay:-4s}
+  .b3{width:90px;height:90px;top:30%;right:-20px;animation-delay:-8s}
+  @keyframes float{50%{transform:translateY(-35px) scale(1.08)}}
+
+  .card{
+    position:relative;z-index:1;width:100%;max-width:920px;display:grid;grid-template-columns:1fr 1.1fr;
+    border-radius:28px;overflow:hidden;background:rgba(255,255,255,.12);
+    backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.25);box-shadow:0 30px 80px rgba(0,0,0,.4);
+  }
+  .card.shake{animation:shake .4s}
+  @keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+
+  /* left side */
+  .side{padding:50px 40px;color:#fff;display:flex;flex-direction:column;justify-content:center;gap:18px;position:relative}
+  .logo{width:60px;height:60px;border-radius:18px;display:grid;place-items:center;font-size:30px;
+    background:linear-gradient(135deg,#ff6bcb,#7c3aed);box-shadow:0 10px 25px rgba(255,107,203,.45)}
+  .side h1{font-size:2rem;line-height:1.2;transition:opacity .3s}
+  .side p{opacity:.85;font-size:.95rem;line-height:1.6}
+  .perks{list-style:none;display:grid;gap:10px;font-size:.9rem}
+  .perks li::before{content:"✓";display:inline-grid;place-items:center;width:22px;height:22px;margin-right:10px;
+    border-radius:50%;background:rgba(255,255,255,.2);font-size:12px}
+
+  /* right side */
+  .panel{background:#fff;padding:40px;color:#1f2937}
+  .tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;background:#f1f2f6;border-radius:14px;padding:5px;margin-bottom:28px}
+  .tabs button{position:relative;z-index:2;border:0;background:none;padding:11px;font:600 .95rem 'Poppins',sans-serif;color:#6b7280;cursor:pointer;transition:color .3s}
+  .tabs button.active{color:#fff}
+  .indicator{position:absolute;z-index:1;top:5px;left:5px;width:calc(50% - 5px);height:calc(100% - 10px);border-radius:10px;
+    background:linear-gradient(135deg,#7c3aed,#2563eb);box-shadow:0 6px 16px rgba(99,102,241,.4);transition:transform .35s cubic-bezier(.7,0,.2,1)}
+  .tabs.reg .indicator{transform:translateX(100%)}
+
+  form{display:none}
+  form.active{display:block;animation:fadeUp .5s}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+  .title{font-size:1.5rem;font-weight:700;margin-bottom:4px}
+  .sub{color:#6b7280;font-size:.88rem;margin-bottom:22px}
+
+  /* floating label fields */
+  .field{position:relative;margin-bottom:8px}
+  .field input{width:100%;padding:17px 46px 17px 16px;border:2px solid #e5e7eb;border-radius:14px;font:500 .95rem 'Poppins',sans-serif;
+    background:#fafafa;outline:none;transition:.25s}
+  .field label{position:absolute;left:14px;top:16px;padding:0 6px;color:#9ca3af;font-size:.92rem;pointer-events:none;transition:.2s;border-radius:6px}
+  .field input:focus,.field input:not(:placeholder-shown){background:#fff}
+  .field input:focus{border-color:#7c3aed;box-shadow:0 0 0 4px rgba(124,58,237,.15)}
+  .field input:focus~label,.field input:not(:placeholder-shown)~label{top:-10px;font-size:.75rem;background:#fff;color:#7c3aed;font-weight:600}
+  .field.valid input{border-color:#22c55e}
+  .field.invalid input{border-color:#ef4444}
+  .field.invalid input:focus{box-shadow:0 0 0 4px rgba(239,68,68,.15)}
+  .field.invalid label{color:#ef4444}
+  .msg{min-height:20px;margin:4px 4px 8px;font-size:.78rem;color:#ef4444}
+
+  .eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:0;background:none;cursor:pointer;
+    width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#9ca3af;transition:.2s}
+  .eye:hover{background:#f1f2f6;color:#7c3aed}
+  .eye svg{width:20px;height:20px}
+  .eye .off{display:none}
+  .eye.show .on{display:none}
+  .eye.show .off{display:block}
+
+  /* strength meter */
+  .strength{display:none;margin:-2px 2px 12px}
+  .strength.visible{display:block}
+  .bars{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .bars span{height:6px;border-radius:6px;background:#e5e7eb;transition:.3s}
+  .strength small{display:block;margin-top:5px;font-size:.78rem;font-weight:600;color:#6b7280}
+  .strength[data-s="1"] .bars span:nth-child(-n+1){background:#ef4444}
+  .strength[data-s="2"] .bars span:nth-child(-n+2){background:#f59e0b}
+  .strength[data-s="3"] .bars span:nth-child(-n+3){background:#3b82f6}
+  .strength[data-s="4"] .bars span:nth-child(-n+4){background:#22c55e}
+
+  .row{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;margin:6px 0 20px;color:#6b7280}
+  .row label{display:flex;align-items:center;gap:8px;cursor:pointer}
+  .row input{accent-color:#7c3aed;width:16px;height:16px}
+  .row a{color:#7c3aed;text-decoration:none;font-weight:600}
+  .row a:hover{text-decoration:underline}
+
+  .btn{width:100%;padding:15px;border:0;border-radius:14px;color:#fff;font:600 1rem 'Poppins',sans-serif;cursor:pointer;
+    background:linear-gradient(135deg,#7c3aed,#2563eb 60%,#ec4899);background-size:200% 100%;
+    box-shadow:0 12px 25px rgba(99,102,241,.4);transition:.35s}
+  .btn:hover{background-position:100% 0;transform:translateY(-3px);box-shadow:0 16px 30px rgba(99,102,241,.5)}
+  .btn:active{transform:translateY(0)}
+  .switch{text-align:center;margin-top:18px;font-size:.88rem;color:#6b7280}
+  .switch a{color:#7c3aed;font-weight:600;cursor:pointer}
+
+  /* success toast */
+  .toast{position:fixed;top:24px;left:50%;transform:translate(-50%,-150%);z-index:10;background:#16a34a;color:#fff;
+    padding:14px 26px;border-radius:50px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.3);transition:transform .5s cubic-bezier(.2,1.4,.4,1)}
+  .toast.show{transform:translate(-50%,0)}
+
+  /* responsive */
+  @media(max-width:760px){
+    .card{grid-template-columns:1fr}
+    .side{padding:30px 28px 22px;gap:10px}
+    .side h1{font-size:1.5rem}
+    .perks{display:none}
+    .panel{padding:30px 24px}
+  }
+</style>
+</head>
+<body>
+<div class="bubble b1"></div><div class="bubble b2"></div><div class="bubble b3"></div>
+<div class="toast" id="toast"></div>
+
+<div class="card" id="card">
+  <!-- LEFT -->
+  <div class="side">
+    <div class="logo">🚀</div>
+    <h1 id="sideTitle">Welcome back!</h1>
+    <p id="sideText">Log in to pick up right where you left off. Your projects are waiting for you.</p>
+    <ul class="perks">
+      <li>Secure and encrypted</li>
+      <li>Free forever plan</li>
+      <li>Works on every device</li>
+    </ul>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="panel">
+    <div class="tabs" id="tabs">
+      <div class="indicator"></div>
+      <button type="button" class="active" data-mode="login">Login</button>
+      <button type="button" data-mode="register">Register</button>
+    </div>
+
+    <!-- LOGIN -->
+    <form id="loginForm" class="active" novalidate>
+      <div class="title">Sign in</div>
+      <div class="sub">Enter your details to continue</div>
+
+      <div class="field">
+        <input type="email" id="lemail" placeholder=" " data-rule="email" autocomplete="email">
+        <label for="lemail">Email address</label>
+      </div>
+      <div class="msg"></div>
+
+      <div class="field">
+        <input type="password" id="lpass" placeholder=" " data-rule="required" autocomplete="current-password">
+        <label for="lpass">Password</label>
+        <button type="button" class="eye" aria-label="Show or hide password">
+          <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/></svg>
+        </button>
+      </div>
+      <div class="msg"></div>
+
+      <div class="row">
+        <label><input type="checkbox"> Remember me</label>
+        <a href="#">Forgot password?</a>
+      </div>
+      <button class="btn" type="submit">Login</button>
+      <div class="switch">New here? <a data-mode="register">Create an account</a></div>
+    </form>
+
+    <!-- REGISTER -->
+    <form id="registerForm" novalidate>
+      <div class="title">Create account</div>
+      <div class="sub">Join us in less than a minute</div>
+
+      <div class="field">
+        <input type="text" id="rname" placeholder=" " data-rule="name" autocomplete="name">
+        <label for="rname">Full name</label>
+      </div>
+      <div class="msg"></div>
+
+      <div class="field">
+        <input type="email" id="remail" placeholder=" " data-rule="email" autocomplete="email">
+        <label for="remail">Email address</label>
+      </div>
+      <div class="msg"></div>
+
+      <div class="field">
+        <input type="password" id="rpass" placeholder=" " data-rule="password" autocomplete="new-password">
+        <label for="rpass">Password</label>
+        <button type="button" class="eye" aria-label="Show or hide password">
+          <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/></svg>
+        </button>
+      </div>
+      <div class="strength" id="strength" data-s="0">
+        <div class="bars"><span></span><span></span><span></span><span></span></div>
+        <small id="strengthText">Password strength</small>
+      </div>
+      <div class="msg"></div>
+
+      <div class="field">
+        <input type="password" id="rconfirm" placeholder=" " data-rule="confirm" autocomplete="new-password">
+        <label for="rconfirm">Confirm password</label>
+        <button type="button" class="eye" aria-label="Show or hide password">
+          <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20c-7 0-11-8-11-8a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/></svg>
+        </button>
+      </div>
+      <div class="msg"></div>
+
+      <button class="btn" type="submit" style="margin-top:6px">Create Account</button>
+      <div class="switch">Already registered? <a data-mode="login">Login</a></div>
+    </form>
+  </div>
+</div>
+
+<script>
+const $ = (s, p = document) => p.querySelector(s);
+const $$ = (s, p = document) => [...p.querySelectorAll(s)];
+
+/* ---------- Tab switching ---------- */
+const copy = {
+  login:    ['Welcome back!', 'Log in to pick up right where you left off. Your projects are waiting for you.'],
+  register: ['Join the community', 'Create your free account and start building something amazing today.']
+};
+function setMode(mode) {
+  $('#tabs').classList.toggle('reg', mode === 'register');
+  $$('.tabs button').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  $('#loginForm').classList.toggle('active', mode === 'login');
+  $('#registerForm').classList.toggle('active', mode === 'register');
+  $('#sideTitle').textContent = copy[mode][0];
+  $('#sideText').textContent = copy[mode][1];
+}
+$$('[data-mode]').forEach(el => el.addEventListener('click', () => setMode(el.dataset.mode)));
+
+/* ---------- Show / hide password ---------- */
+$$('.eye').forEach(btn => btn.addEventListener('click', () => {
+  const input = btn.parentElement.querySelector('input');
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  btn.classList.toggle('show', show);
+}));
+
+/* ---------- Password strength ---------- */
+function strengthScore(v) {
+  let s = 0;
+  if (v.length >= 8) s++;
+  if (/[a-z]/.test(v) && /[A-Z]/.test(v)) s++;
+  if (/\d/.test(v)) s++;
+  if (/[^A-Za-z0-9]/.test(v)) s++;
+  return v.length ? Math.max(s, 1) : 0;
+}
+const labels = ['', 'Weak', 'Fair', 'Good', 'Strong 💪'];
+
+/* ---------- Validation rules (return true or an error message) ---------- */
+const rules = {
+  required: v => v.length > 0 || 'Please enter your password',
+  name: v => v.trim().length >= 2 || 'Please enter your full name',
+  email: v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()) || 'Enter a valid email like name@example.com',
+  password: v => {
+    if (v.length < 8) return 'Use at least 8 characters';
+    if (!/[A-Z]/.test(v)) return 'Add an uppercase letter';
+    if (!/[a-z]/.test(v)) return 'Add a lowercase letter';
+    if (!/\d/.test(v)) return 'Add a number';
+    if (!/[^A-Za-z0-9]/.test(v)) return 'Add a symbol (e.g. @ # ! $)';
+    return true;
+  },
+  confirm: v => v.length === 0 ? 'Please confirm your password'
+              : v === $('#rpass').value || 'Passwords do not match'
+};
+
+function validate(input) {
+  const field = input.parentElement;
+  const msg = field.nextElementSibling.classList.contains('strength')
+    ? field.nextElementSibling.nextElementSibling : field.nextElementSibling;
+  const result = rules[input.dataset.rule](input.value);
+  const ok = result === true;
+  field.classList.toggle('valid', ok);
+  field.classList.toggle('invalid', !ok);
+  msg.textContent = ok ? '' : result;
+  return ok;
+}
+
+/* live validation */
+$$('input[data-rule]').forEach(input => {
+  input.addEventListener('input', () => {
+    if (input.id === 'rpass') {
+      const s = strengthScore(input.value);
+      $('#strength').classList.toggle('visible', input.value.length > 0);
+      $('#strength').dataset.s = s;
+      $('#strengthText').textContent = labels[s];
+      if ($('#rconfirm').value) validate($('#rconfirm'));
+    }
+    if (input.value || input.parentElement.classList.contains('invalid')) validate(input);
+  });
+  input.addEventListener('blur', () => { if (input.value) validate(input); });
+});
+
+/* ---------- Submit ---------- */
+function toast(text) {
+  const t = $('#toast');
+  t.textContent = text;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+['loginForm', 'registerForm'].forEach(id => {
+  const form = document.getElementById(id);
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const results = $$('input[data-rule]', form).map(validate);
+    if (results.every(Boolean)) {
+      toast(id === 'loginForm' ? '✅ Login successful! Welcome back.' : '🎉 Account created successfully!');
+      form.reset();
+      $$('.field', form).forEach(f => f.classList.remove('valid', 'invalid'));
+      $$('.msg', form).forEach(m => m.textContent = '');
+      $('#strength').classList.remove('visible');
+    } else {
+      const card = $('#card');
+      card.classList.remove('shake'); void card.offsetWidth; card.classList.add('shake');
+    }
+  });
+});
+</script>
+</body>
+</html>
